@@ -9,6 +9,7 @@ Node::Node(unsigned long long int num)
 
 
 
+
 Stack::Stack()
 {
 	this->top_node = nullptr;
@@ -18,7 +19,6 @@ Stack::Stack(const Stack& stack)
 {
 	stack.copy_in(*this);
 }
-
 
 Stack::Stack(unsigned long long int count, ...)
 {
@@ -31,11 +31,6 @@ Stack::Stack(unsigned long long int count, ...)
 	va_end(list);
 }
 
-Stack::Stack(Node* node)
-{
-	this->top_node = node;
-}
-
 Stack::~Stack()
 {
 	while (this->top_node != nullptr)
@@ -43,6 +38,8 @@ Stack::~Stack()
 		pop();
 	}
 }
+
+
 
 
 
@@ -87,8 +84,6 @@ void Stack::print()
 
 
 
-
-
 bool Stack::comparing(unsigned long long int num)
 {
 	Node* temp_node = this->top_node;
@@ -103,11 +98,69 @@ bool Stack::comparing(unsigned long long int num)
 	return false;
 }
 
-Stack Stack::mirror() const
+
+
+
+
+Node* Stack::copy_in(Stack& stack_copy) const
 {
-	// функция нужна для того, чтобы "развернуть" стек:
-	// сначала в стек mirror_stack копируется стек stack (например, 23, 80, 1, 6),
-	// а после, стек mirror_stack (6, 1, 80, 23) копируется в какой-нибудь другой стек (который получится 23, 80, 1, 6)
+	if (this->top_node != nullptr)
+	{
+		Node* temp_node = this->top_node;
+		Stack mirror_stack; // нужно для того, чтобы "развернуть" стек:
+		// сначала в стек mirror_stack копируется стек this (например, 23, 80, 1, 6),
+		// а после, стек mirror_stack (6, 1, 80, 23) можно копировать в какой-нибудь другой стек (который получится 23, 80, 1, 6, т.е. равный изначальному)
+		
+		while (temp_node != nullptr) 
+		{
+			mirror_stack.push(temp_node->data);
+			temp_node = temp_node->previous_node;
+		}
+
+
+		stack_copy.~Stack();
+
+		while (mirror_stack.top_node != nullptr) // копирование из стека temp_stack в стек stack_copy
+		{
+			stack_copy.push(mirror_stack.top_node->data);
+			mirror_stack.top_node = mirror_stack.top_node->previous_node;
+		}
+
+		return stack_copy.top_node;
+	}
+
+	std::cerr << "Ошибка: стек, который нужно скопировать, пустой!" << std::endl;
+	return nullptr;
+}
+
+
+Node* Stack::operator+(Stack& stack)
+{
+	Node* temp_node = stack.top_node;
+	Stack mirror_stack;
+
+	while (temp_node != nullptr)
+	{
+		mirror_stack.push(temp_node->data);
+		temp_node = temp_node->previous_node;
+	}
+
+
+	Stack addition_stack = *this;
+
+	while (mirror_stack.top_node != nullptr) // добавление узлов из стека mirror_stack в стек addition_stack
+	{
+		addition_stack.push(mirror_stack.top_node->data);
+		mirror_stack.top_node = mirror_stack.top_node->previous_node;
+	}
+
+	std::cout << std::endl << "НОВЫЙ СТЕК: "; addition_stack.print();
+	std::cout << "АДРЕС НОВОГО СТЕКА: "; return addition_stack.top_node;
+}
+
+
+Node* Stack::operator*(Stack& stack)
+{
 
 	Node* temp_node = this->top_node;
 	Stack mirror_stack;
@@ -117,70 +170,19 @@ Stack Stack::mirror() const
 		mirror_stack.push(temp_node->data);
 		temp_node = temp_node->previous_node;
 	}
-	return mirror_stack;
-}
 
 
-
-
-
-
-Node* Stack::copy_in(Stack& stack_copy) const
-{
-	if (this->top_node != nullptr)
-	{
-		stack_copy.~Stack();
-		Node* temp_node = this->top_node; // не смог я сюда впихнуть функцию mirror так, чтобы конструктор не ругался
-		Stack temp_stack; // это вместо mirror()
-		
-		while (temp_node != nullptr) // это вместо mirror()
-		{
-			temp_stack.push(temp_node->data);
-			temp_node = temp_node->previous_node;
-		}
-
-		while (temp_stack.top_node != nullptr) // копирование из стека temp_stack в стек stack_copy
-		{
-			stack_copy.push(temp_stack.top_node->data);
-			temp_stack.top_node = temp_stack.top_node->previous_node;
-		}
-		return stack_copy.top_node;
-	}
-	std::cerr << "Ошибка: стек, который нужно скопировать, пустой!" << std::endl;
-	return this->top_node;
-}
-
-
-Node* Stack::operator+(Stack& stack)
-{
-	Stack addition_stack = *this;
-	Stack mirror_stack = stack.mirror();
-
-	while (mirror_stack.top_node != nullptr) // добавление узлов из стека mirror_stack в стек addition_stack
-	{
-		addition_stack.push(mirror_stack.top_node->data);
-		mirror_stack.top_node = mirror_stack.top_node->previous_node;
-	}
-
-	//addition_stack.print();
-	return addition_stack.top_node;
-}
-
-
-Node* Stack::operator*(Stack& stack)
-{
 	Stack intersection_stack;
-	Stack mirror_stack = stack.mirror();
 
 	while (mirror_stack.top_node != nullptr) // добавление узлов из стека mirror_stack в стек intersection_stack
 	{
-		if (this->comparing(mirror_stack.top_node->data) == true) // функция comparing ищет одинаковые элементы
+		if (stack.comparing(mirror_stack.top_node->data) == true) // функция comparing ищет одинаковые элементы
 		{
 			intersection_stack.push(mirror_stack.top_node->data);
 		}
 		mirror_stack.top_node = mirror_stack.top_node->previous_node;
 	}
 
-	//intersection_stack.print();
-	return intersection_stack.top_node;
+	std::cout << std::endl << "НОВЫЙ СТЕК: "; intersection_stack.print(); 
+	std::cout << "АДРЕС НОВОГО СТЕКА: "; return intersection_stack.top_node;
 }

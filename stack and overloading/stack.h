@@ -19,7 +19,7 @@ public:
 	Stack();
 	Stack(const Stack& stack);
 	Stack(unsigned long long int count, ...);
-	Stack(Node* node);
+
 	~Stack();
 
 private:
@@ -31,12 +31,9 @@ public:
 	void print();
 
 	bool comparing(unsigned long long int num);
-	Stack mirror() const;
 
 	Node* copy_in(Stack& stack_copy) const;
 	Node* operator+(Stack& stack);
 	Node* operator*(Stack& stack);
-
-
 };
 
